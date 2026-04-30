@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build
+dist/
+*.log
+
+# Godot
+.godot/
+*.import
+export_presets.cfg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Large binary assets (use Git LFS or download separately)
+assets/audio/
+assets/external/
+assets/free-packs/
+assets/models/
+*.glb
+*.gltf
+*.wav
+*.mp3
+*.ogg
+*.bin
+
+# Keep asset catalogue and icons
+!assets/ASSET_CATALOGUE.md
+!assets/icons/
+
+# Temp
+test-results/
+build_*.log
+assets/icons/
