@@ -1,7 +1,7 @@
 ﻿# GUTTER GOD
 Projet de jeu en JavaScript
 ## Description
-GUTTER GOD est un jeu de plateforme en 2D où le joueur doit naviguer à travers des niveaux générés aléatoirement tout en évitant des ennemis.
+GUTTER GOD est un jeu RPG action aventure  1er /3eme personne  immersif en 3D où le joueur doit naviguer à travers des niveaux générés aléatoirement tout en évitant des ennemis.
 ## Objectifs
 * Créer un jeu de plateforme en 2D avec des niveaux générés aléatoirement
 * Implémenter des mécaniques de jeu pour le joueur et les ennemis
