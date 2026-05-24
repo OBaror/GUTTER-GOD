@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getProgress, getStreak, calculateToeicEstimate, getSectionProgress } from '../utils/storage';
+import { getProgress, getStreak, calculateToeicEstimate, getSectionProgress, getXP, getUnlockedAchievements } from '../utils/storage';
+import { ACHIEVEMENTS } from '../data/achievements';
 
 const MOTIVATIONAL_MESSAGES = [
   "Chaque mot appris est un pas vers les 800 points ! 💪",
@@ -26,6 +27,9 @@ export default function Dashboard({ onNavigate, settings }) {
   const [sectionProgress, setSectionProgress] = useState(null);
   const [tipIndex, setTipIndex] = useState(0);
   const [msgIndex] = useState(() => Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length));
+  const [xpTotal, setXpTotal] = useState(0);
+  const [unlockedAchievements, setUnlockedAchievements] = useState([]);
+  const [activeModulesCount, setActiveModulesCount] = useState(0);
 
   useEffect(() => {
     const p = getProgress();
@@ -34,6 +38,21 @@ export default function Dashboard({ onNavigate, settings }) {
     setStreak(s);
     setToeicEstimate(calculateToeicEstimate(p));
     setSectionProgress(getSectionProgress(p));
+    setXpTotal(getXP());
+
+    const unlocked = getUnlockedAchievements();
+    setUnlockedAchievements(unlocked);
+
+    // Count active modules
+    let active = 0;
+    if ((p.vocabulary?.knownCards?.length || 0) > 0) active++;
+    if ((p.grammar?.exercisesCompleted?.length || 0) > 0) active++;
+    if ((p.reading?.passagesCompleted?.length || 0) > 0) active++;
+    if ((p.listening?.exercisesCompleted?.length || 0) > 0) active++;
+    if ((p.jira?.knownTerms?.length || 0) > 0) active++;
+    if ((p.dataAi?.knownConcepts?.length || 0) > 0) active++;
+    if ((p.siManagement?.knownConcepts?.length || 0) > 0) active++;
+    setActiveModulesCount(active);
 
     const interval = setInterval(() => {
       setTipIndex(i => (i + 1) % DYSLEXIA_TIPS.length);
@@ -118,6 +137,17 @@ export default function Dashboard({ onNavigate, settings }) {
             <span>990</span>
           </div>
 
+          {/* TOEIC pace prediction */}
+          {toeicEstimate < 800 && (
+            <div style={{ marginTop: 12, padding: 10, background: 'rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 13, color: 'rgba(255,255,255,0.7)' }}>
+              📈 À ce rythme, tu pourrais atteindre 800 pts dans environ{' '}
+              <span style={{ color: '#60a5fa', fontWeight: 700 }}>
+                {toeicEstimate < 300 ? '~24' : toeicEstimate < 500 ? '~12' : toeicEstimate < 650 ? '~6' : '~3'} semaines
+              </span>{' '}
+              de pratique régulière.
+            </div>
+          )}
+
           {/* Score levels explanation */}
           <div style={{ marginTop: 16, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
             {[
@@ -147,21 +177,24 @@ export default function Dashboard({ onNavigate, settings }) {
           )}
         </div>
 
-        {/* Today's goal */}
+        {/* XP Bar */}
         <div className="card">
-          <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 'var(--font-size-base)' }}>
-            📅 Objectif quotidien
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>⭐ Expérience (XP)</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: '#d97706', marginBottom: 4 }}>{xpTotal}</div>
+          <div className="text-sm text-muted" style={{ marginBottom: 8 }}>points d'expérience</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+            {unlockedAchievements.length} / {ACHIEVEMENTS.length} succès débloqués
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 4 }}>
-            0 / 20
-          </div>
-          <div className="text-sm text-muted" style={{ marginBottom: 12 }}>exercices complétés</div>
+        </div>
+
+        {/* Active modules */}
+        <div className="card">
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>📊 Modules actifs</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-primary)', marginBottom: 4 }}>{activeModulesCount}</div>
+          <div className="text-sm text-muted" style={{ marginBottom: 8 }}>sur 7 modules disponibles</div>
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: '0%' }} />
+            <div className="progress-fill" style={{ width: `${Math.round((activeModulesCount / 7) * 100)}%` }} />
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
-            Modifie ton objectif dans les paramètres ⚙️
-          </p>
         </div>
       </div>
 
@@ -188,46 +221,41 @@ export default function Dashboard({ onNavigate, settings }) {
         </div>
       </div>
 
+      {/* Recent achievements */}
+      {unlockedAchievements.length > 0 && (
+        <div className="card mb-24">
+          <h2 className="card-title">🏆 Succès récents</h2>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {ACHIEVEMENTS.filter(a => unlockedAchievements.slice(-2).includes(a.id)).map(a => (
+              <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg-main)', padding: '10px 14px', borderRadius: 10, border: '1px solid #fbbf24' }}>
+                <span style={{ fontSize: '1.8rem' }}>{a.icon}</span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 'var(--font-size-sm)' }}>{a.title}</div>
+                  <div style={{ fontSize: 11, color: '#d97706', fontWeight: 600 }}>+{a.xpReward} XP</div>
+                </div>
+              </div>
+            ))}
+            <button className="btn btn-outline btn-sm" onClick={() => onNavigate('achievements')} style={{ alignSelf: 'center' }}>
+              Voir tous les succès →
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div className="card mb-24">
         <h2 className="card-title">🚀 Commencer maintenant</h2>
         <div className="quick-actions">
           {[
-            {
-              page: 'vocabulary',
-              icon: '📚',
-              title: 'Vocabulaire',
-              desc: 'Flashcards IT & Business',
-              color: '#dbeafe'
-            },
-            {
-              page: 'grammar',
-              icon: '✏️',
-              title: 'Grammaire',
-              desc: 'Exercices TOEIC Part 5',
-              color: '#ede9fe'
-            },
-            {
-              page: 'reading',
-              icon: '📖',
-              title: 'Lecture',
-              desc: 'Textes de compréhension',
-              color: '#d1fae5'
-            },
-            {
-              page: 'listening',
-              icon: '🎧',
-              title: 'Écoute',
-              desc: 'Conversations & annonces',
-              color: '#fef3c7'
-            },
-            {
-              page: 'practice',
-              icon: '📝',
-              title: 'Test pratique',
-              desc: 'Simule l\'examen TOEIC',
-              color: '#fee2e2'
-            },
+            { page: 'vocabulary', icon: '📚', title: 'Vocabulaire', desc: 'Flashcards IT & Business', color: '#dbeafe' },
+            { page: 'grammar', icon: '✏️', title: 'Grammaire', desc: 'Exercices TOEIC Part 5', color: '#ede9fe' },
+            { page: 'reading', icon: '📖', title: 'Lecture', desc: 'Textes de compréhension', color: '#d1fae5' },
+            { page: 'listening', icon: '🎧', title: 'Écoute', desc: 'Conversations & annonces', color: '#fef3c7' },
+            { page: 'practice', icon: '📝', title: 'Test pratique', desc: 'Simule l\'examen TOEIC', color: '#fee2e2' },
+            { page: 'jira', icon: '🎯', title: 'Jira & Agile', desc: 'Scrum, Kanban, Agile', color: '#ede9fe' },
+            { page: 'data', icon: '📊', title: 'Data & IA', desc: 'BI, ML, LLM, Prompt', color: '#d1fae5' },
+            { page: 'si', icon: '🖥️', title: 'SI Management', desc: 'ITIL, COBIT, Cloud, Sécu', color: '#fef3c7' },
+            { page: 'pomodoro', icon: '⏱️', title: 'Pomodoro', desc: 'Sessions de travail focalisé', color: '#fee2e2' },
           ].map(action => (
             <div
               key={action.page}

@@ -8,16 +8,53 @@ import Reading from './components/Reading';
 import Listening from './components/Listening';
 import PracticeTest from './components/PracticeTest';
 import Settings from './components/Settings';
+import JiraAgile from './components/JiraAgile';
+import DataAI from './components/DataAI';
+import SIManagement from './components/SIManagement';
+import Achievements from './components/Achievements';
+import Pomodoro from './components/Pomodoro';
+import CheatSheets from './components/CheatSheets';
+import CareerPath from './components/CareerPath';
 
-const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Tableau de bord', icon: '🏠', badge: null },
-  { id: 'vocabulary', label: 'Vocabulaire', icon: '📚', badge: null },
-  { id: 'grammar', label: 'Grammaire', icon: '✏️', badge: null },
-  { id: 'reading', label: 'Lecture', icon: '📖', badge: null },
-  { id: 'listening', label: 'Écoute', icon: '🎧', badge: null },
-  { id: 'practice', label: 'Test pratique', icon: '📝', badge: 'TOEIC' },
-  { id: 'settings', label: 'Paramètres', icon: '⚙️', badge: null },
+const NAV_GROUPS = [
+  {
+    label: 'TOEIC',
+    items: [
+      { id: 'dashboard', label: 'Tableau de bord', icon: '🏠', badge: null },
+      { id: 'vocabulary', label: 'Vocabulaire', icon: '📚', badge: null },
+      { id: 'grammar', label: 'Grammaire', icon: '✏️', badge: null },
+      { id: 'reading', label: 'Lecture', icon: '📖', badge: null },
+      { id: 'listening', label: 'Écoute', icon: '🎧', badge: null },
+      { id: 'practice', label: 'Test pratique', icon: '📝', badge: 'TOEIC' },
+    ]
+  },
+  {
+    label: 'COMPÉTENCES MCSI',
+    items: [
+      { id: 'career', label: 'Parcours carrière', icon: '🗺️', badge: null },
+      { id: 'jira', label: 'Jira & Agile', icon: '🎯', badge: null },
+      { id: 'data', label: 'Data & BI', icon: '📊', badge: null },
+      { id: 'ai', label: 'IA & Digital', icon: '🤖', badge: null },
+      { id: 'si', label: 'SI Management', icon: '🖥️', badge: null },
+    ]
+  },
+  {
+    label: 'OUTILS',
+    items: [
+      { id: 'achievements', label: 'Succès', icon: '🏆', badge: null },
+      { id: 'pomodoro', label: 'Pomodoro', icon: '⏱️', badge: null },
+      { id: 'cheatsheets', label: 'Fiches mémo', icon: '📋', badge: null },
+    ]
+  },
+  {
+    label: 'CONFIG',
+    items: [
+      { id: 'settings', label: 'Paramètres', icon: '⚙️', badge: null },
+    ]
+  },
 ];
+
+const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
@@ -30,7 +67,6 @@ export default function App() {
   }, [settings]);
 
   function applySettings(s) {
-    const root = document.documentElement;
     const body = document.body;
 
     if (s.dyslexiaMode) {
@@ -74,6 +110,22 @@ export default function App() {
         return <Listening settings={settings} />;
       case 'practice':
         return <PracticeTest settings={settings} onNavigate={navigateTo} />;
+      case 'career':
+        return <CareerPath settings={settings} onNavigate={navigateTo} />;
+      case 'jira':
+        return <JiraAgile settings={settings} />;
+      case 'data':
+        return <DataAI settings={settings} />;
+      case 'ai':
+        return <DataAI settings={settings} />;
+      case 'si':
+        return <SIManagement settings={settings} />;
+      case 'achievements':
+        return <Achievements settings={settings} />;
+      case 'pomodoro':
+        return <Pomodoro settings={settings} />;
+      case 'cheatsheets':
+        return <CheatSheets settings={settings} />;
       case 'settings':
         return <Settings settings={settings} onSettingsChange={handleSettingsChange} />;
       default:
@@ -101,10 +153,10 @@ export default function App() {
       {/* Sidebar */}
       <nav className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
-          <span className="sidebar-logo">🎯</span>
+          <span className="sidebar-logo">🎓</span>
           {!sidebarCollapsed && (
             <div>
-              <div className="sidebar-title">TOEIC Master</div>
+              <div className="sidebar-title">MCSI Skills Hub</div>
               <div className="sidebar-subtitle">Plateforme d'apprentissage</div>
             </div>
           )}
@@ -119,28 +171,35 @@ export default function App() {
         </div>
 
         <div className="sidebar-nav">
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.id}
-              className={`nav-item ${currentPage === item.id ? 'active' : ''}`}
-              onClick={() => navigateTo(item.id)}
-              title={sidebarCollapsed ? item.label : undefined}
-            >
-              <span className="nav-icon">{item.icon}</span>
+          {NAV_GROUPS.map(group => (
+            <div key={group.label}>
               {!sidebarCollapsed && (
-                <>
-                  <span className="nav-label">{item.label}</span>
-                  {item.badge && <span className="nav-badge">{item.badge}</span>}
-                </>
+                <div className="sidebar-section-header">{group.label}</div>
               )}
-            </button>
+              {group.items.map(item => (
+                <button
+                  key={item.id}
+                  className={`nav-item ${currentPage === item.id || (currentPage === 'ai' && item.id === 'data') ? 'active' : ''}`}
+                  onClick={() => navigateTo(item.id)}
+                  title={sidebarCollapsed ? item.label : undefined}
+                >
+                  <span className="nav-icon">{item.icon}</span>
+                  {!sidebarCollapsed && (
+                    <>
+                      <span className="nav-label">{item.label}</span>
+                      {item.badge && <span className="nav-badge">{item.badge}</span>}
+                    </>
+                  )}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 
         {!sidebarCollapsed && (
           <div className="sidebar-footer">
-            <div>200 → 800</div>
-            <div style={{ fontSize: 10, marginTop: 4 }}>Niveau cible TOEIC</div>
+            <div>ESGI — MCSI</div>
+            <div style={{ fontSize: 10, marginTop: 4 }}>200 → 800 pts TOEIC</div>
           </div>
         )}
       </nav>
