@@ -15,6 +15,7 @@ import Achievements from './components/Achievements';
 import Pomodoro from './components/Pomodoro';
 import CheatSheets from './components/CheatSheets';
 import CareerPath from './components/CareerPath';
+import CVTool from './components/CVTool';
 
 const NAV_GROUPS = [
   {
@@ -44,6 +45,7 @@ const NAV_GROUPS = [
       { id: 'achievements', label: 'Succès', icon: '🏆', badge: null },
       { id: 'pomodoro', label: 'Pomodoro', icon: '⏱️', badge: null },
       { id: 'cheatsheets', label: 'Fiches mémo', icon: '📋', badge: null },
+      { id: 'cv', label: 'CV & Lettre', icon: '📄', badge: 'Nouveau' },
     ]
   },
   {
@@ -126,6 +128,8 @@ export default function App() {
         return <Pomodoro settings={settings} />;
       case 'cheatsheets':
         return <CheatSheets settings={settings} />;
+      case 'cv':
+        return <CVTool settings={settings} />;
       case 'settings':
         return <Settings settings={settings} onSettingsChange={handleSettingsChange} />;
       default:
